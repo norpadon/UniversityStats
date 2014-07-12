@@ -89,7 +89,7 @@ class HseAggregator(programUrl : String) : Aggregator {
     override val PlacesCount = placesMap[Name]!!
     override val Exempts = exemptsMap[Name]!!
     override val Targeted = targetedMap[Name]!!
-    override val Reserve = 25
+    override val Reserve = PlacesCount / 4
 
     override fun getRecords() : List<Record> {
         return ArrayList<Record>(dataList)
