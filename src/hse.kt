@@ -76,8 +76,11 @@ class HseAggregator(programUrl : String) : Aggregator {
             val prior = if (cell(3, curRow) == "Подлинник") 0 else 1
             // Смотрим на олимпиады.
             val olymp = cell(4, curRow) != ""
+            // Смотрим на наличие льгот и целевого зачисления
+            val exempt = cell(5, curRow) == "+"
+            val targeted = cell(6, curRow) == "+"
             // Сохраням полученные данные.
-            dataList.add(Record(name, score, olymp, prior))
+            dataList.add(Record(name, score, olymp, prior, targeted, exempt))
             ++curRow
         }
     }
@@ -167,8 +170,12 @@ fun printData() {
             System.out.println(hse.PlacesCount)
             System.out.print("Количество заявлений: ")
             System.out.println(recs.size)
-            System.out.print("Из них олимпиадников: ")
-            System.out.println(recs.filter { it.Olymp } .size)
+            System.out.print("Количество олимпиадников (БВИ): ")
+            System.out.println(recs count { it.Olymp })
+            System.out.print("Количество льготников: ")
+            System.out.println(recs count { it.Exempt })
+            System.out.print("Количество целевиков: ")
+            System.out.println(recs count { it.Targeted })
             System.out.print("Средний балл абитуриентов: ")
             System.out.println(java.lang.String.format("%.2f", hse.getAverageScore()))
             System.out.print("Среднеквадратичное отклонение: ")
