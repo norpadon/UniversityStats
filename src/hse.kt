@@ -38,24 +38,24 @@ class HseAggregator(programUrl : String) : Aggregator {
     private val dataStream = conn.getInputStream()
     private val ss = Workbook.getWorkbook(dataStream)!!.getSheet(0)!!
     {
-        // Заполнение таблицы мест в случае если она еще не заполнена.
+        // Заполнение таблицы мест в случае, если она еще не заполнена.
         if (placesMap.size == 0) {
             loadPlacesCount()
         }
     }
 
-    // Вспомогатеьная функция получнения ячейки таблицы
+    // Вспомогательная функция для получнения содержимого ячейки таблицы
     private fun cell(column : Int, row : Int) : String {
         return ss.getCell(column, row)!!.getContents()!!
     }
 
-    // Название направления подготовки получаем кавычек внутри ячейки A2.
+    // Название направления подготовки получаем из кавычек внутри ячейки A2.
     override val Name = cell(0, 1).split("\"")[1]
 
     // Получаем список абитуриентов.
     private val dataList = ArrayList<Record>();
     {
-        // Еслина направление нужно сдавать 3 экзамена, в ячейке L5 находится строка "Сумма баллов".
+        // Если на направление нужно сдавать 3 экзамена, в ячейке L5 находится строка "Сумма баллов".
         val subjcount = if (cell(10, 4) == "Сумма баллов") 3 else 4
         // Таблица начинается с седьмой строки.
         var curRow = 6
@@ -93,7 +93,7 @@ class HseAggregator(programUrl : String) : Aggregator {
     }
 }
 
-// Треш, угар, и содомия.
+// Треш, угар и содомия.
 private fun loadPlacesCount() {
     val regex = Pattern.compile(
             """<td>\s*<a href="[^<>]*">([^<>]*)</a>((<br>)|[^<>])*</td>""" +
@@ -114,10 +114,10 @@ private fun loadPlacesCount() {
     exemptsMap.set("Программа двух дипломов по экономике НИУ ВШЭ и Лондонского университета", 0)
 }
 
-// Возвращает арргеторы для всех направлений подготовки ВШЭ.
+// Возвращает аггрегаторы для всех направлений подготовки ВШЭ.
 private fun getAllHseAggregators() : List<HseAggregator> {
 
-    // Страшное регулярное выражения для поиска ссылок на excel файлы.
+    // Страшное регулярное выражение для поиска ссылок на excel файлы.
     val regex = Pattern.compile("""href="([^"]*.xls)"""")
     val m = regex.matcher(progPage)
 
@@ -133,7 +133,7 @@ private fun getAllHseAggregators() : List<HseAggregator> {
         // И просим наш пул потоков их обработать.
         fs.add(exec.submit {
             val res = HseAggregator(g)
-            // Вот это нужно, чтобы избежать гонки данных при записи результата.
+            // Вот это нужно чтобы избежать гонки данных при записи результата.
             mutex.lock()
             result.add(res)
             mutex.unlock()
