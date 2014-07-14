@@ -133,7 +133,7 @@ private fun getAllHseAggregators() : List<HseAggregator> {
 
     // Список задач, завершения котрых нажно дождаться.
     val tasks = ArrayList<Future<HseAggregator>>()
-    //Ищем ссылки
+    //Ищем ссылки.
     while (matcher.find()) {
         val link = matcher.group(1)!!
         // И просим наш пул потоков их обработать.
