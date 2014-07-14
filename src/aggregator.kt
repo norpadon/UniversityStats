@@ -3,7 +3,7 @@ package aggregators
 import java.util.Random
 
 /*
- * Класс записи в таблице
+ * Класс записи в таблице.
  */
 class Record (
         val name: String,
@@ -24,7 +24,7 @@ fun square(value: Double): Double = value * value
  */
 trait Aggregator {
 
-    fun getRecords(): List<Record> // Возвращает таблицу заявлений на данное направление
+    fun getRecords(): List<Record> // Возвращает таблицу заявлений на данное направление.
 
     val name: String       // Название направления подготовки.
     val placesCount: Int   // Количество бюджетных мест.
