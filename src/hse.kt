@@ -37,7 +37,7 @@ private fun parseIfNotEmpty(string: String): Int {
  * Обобщенный агрегатор для Высшей Школы Экономики.
  * Конструктор принимает адрес excel таблицы с данными
  */
-class HseAggregator(programUrl : String) : Aggregator {
+class HseAggregator(programUrl: String) : Aggregator {
     // Получение  таблицы
     private val connection = URL(programUrl).openConnection() as HttpURLConnection
     private val dataStream = connection.getInputStream()
@@ -50,12 +50,12 @@ class HseAggregator(programUrl : String) : Aggregator {
     }
 
     // Вспомогательная функция для получнения содержимого ячейки таблицы
-    private fun cell(column : Int, row : Int) : String {
+    private fun cell(column: Int, row: Int): String {
         return spreadsheet.getCell(column, row)!!.getContents()!!
     }
 
     // Название направления подготовки получаем из кавычек внутри ячейки A2.
-    override val name = cell(0, 1).split("\"")[1]
+    override val programName = cell(0, 1).split("\"")[1]
 
     // Получаем список абитуриентов.
     private val dataList = ArrayList<Record>();
@@ -88,9 +88,10 @@ class HseAggregator(programUrl : String) : Aggregator {
     }
 
     //Тут все ясно.
-    override val placesCount = placesMap[name]!!
-    override val exempts = exemptsMap[name]!!
-    override val targeted = targetedMap[name]!!
+    override val universityName = "Высшая Школа Экономики"
+    override val placesCount = placesMap[programName]!!
+    override val exempts = exemptsMap[programName]!!
+    override val targeted = targetedMap[programName]!!
     override val reserve = placesCount / 4
 
     override fun getRecords() : List<Record> {
@@ -125,7 +126,7 @@ private fun loadPlacesCount() {
 }
 
 // Возвращает аггрегаторы для всех направлений подготовки ВШЭ.
-private fun getAllHseAggregators() : List<HseAggregator> {
+fun getAllHseAggregators(): List<HseAggregator> {
 
     // Страшное регулярное выражение для поиска ссылок на excel файлы.
     val regex = Pattern.compile("""href="([^"]*.xls)"""")
@@ -143,7 +144,7 @@ private fun getAllHseAggregators() : List<HseAggregator> {
     }
 
     // Как ни странно, результат.
-    val result = ArrayList<HseAggregator>(tasks.size);
+    val result = ArrayList<HseAggregator>(tasks.size)
     // Ждем завершения обработки.
     for (task in tasks) {
         result.add(task.get()!!)
@@ -151,7 +152,7 @@ private fun getAllHseAggregators() : List<HseAggregator> {
 
     // Сортируем массив по названиям направллений (для удобства).
     result sort object : Comparator<HseAggregator> {
-        override fun compare(a: HseAggregator, b: HseAggregator): Int = a.name compareToIgnoreCase b.name
+        override fun compare(a: HseAggregator, b: HseAggregator): Int = a.programName compareToIgnoreCase b.programName
     }
 
     // Возвращаем резульат.
@@ -159,35 +160,27 @@ private fun getAllHseAggregators() : List<HseAggregator> {
 }
 
 // Печатает статистику.
-fun printData() {
-    for (hse in getAllHseAggregators()) {
+fun printData(data: List<HseAggregator>) {
+    for (hse in data) {
         val firstWave = hse.getMaxPassingScore()
         val minSecondWave = hse.getMinPassingScore()
         val meanSecondWave = hse.getMeanPassingScore()
 
         val records = hse.getRecords()
 
-        System.out.println(hse.name)
+        System.out.println(hse.programName)
         System.out.print("Количество бюджетных мест: ")
         System.out.println(hse.placesCount)
         System.out.print("Количество заявлений: ")
         System.out.println(records.size)
         System.out.print("Количество олимпиадников (БВИ): ")
         System.out.println(records count { it.isOlymp })
-        System.out.print("Количество льготников: ")
-        System.out.println(records count { it.isExempt })
-        System.out.print("Количество целевиков: ")
-        System.out.println(records count { it.isTargeted })
-        System.out.print("Средний балл абитуриентов: ")
-        System.out.println(java.lang.String.format("%.2f", hse.getAverageScore()))
-        System.out.print("Среднеквадратичное отклонение: ")
-        System.out.println((java.lang.String.format("%.2f", hse.getStandardDeviation())))
+        System.out.print("Количество льготников и целевиков: ")
+        System.out.println(records count { it.isExempt || it.isTargeted })
         System.out.print("Ожидаемый проходной балл первой волны: ")
         System.out.println(firstWave)
         System.out.print("Вероятный проходной балл второй волны: ")
         System.out.println(meanSecondWave)
-        System.out.print("Минимально теоретически возможный проходной балл второй волны: ")
-        System.out.println(minSecondWave)
         System.out.println()
     }
 }

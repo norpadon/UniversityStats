@@ -1,6 +1,7 @@
 package aggregators
 
 import java.util.Random
+import org.json.simple.JSONObject
 
 /*
  * Класс записи в таблице.
@@ -26,14 +27,15 @@ trait Aggregator {
 
     fun getRecords(): List<Record> // Возвращает таблицу заявлений на данное направление.
 
-    val name: String       // Название направления подготовки.
-    val placesCount: Int   // Количество бюджетных мест.
-    val targeted: Int      // Из них целевиков.
-    val exempts: Int       // Из них льготников.
-    val reserve: Int       // Размер резерва на случай если олимпиадников больше чем мест.
+    val universityName: String  // Название университета.
+    val programName: String     // Название направления подготовки.
+    val placesCount: Int        // Количество бюджетных мест.
+    val targeted: Int           // Из них целевиков.
+    val exempts: Int            // Из них льготников.
+    val reserve: Int            // Размер резерва на случай если олимпиадников больше чем мест.
 
     // Возвращает средний балл абитуриентов.
-    fun getAverageScore() : Double {
+    fun getAverageScore(): Double {
         val records = getRecords()
         return records.fold(0) {(a, b) -> a + b.score } / records.size.toDouble()
     }
@@ -86,5 +88,22 @@ trait Aggregator {
         val lastSuccessfulGuy = Math.min(sorted.size, Math.max(placesCount, olympCount + reserve)) - 1
         // Возвращаем его балл
         return sorted[lastSuccessfulGuy].first.score
+    }
+
+    fun serializeToJSON(): JSONObject {
+        return JSONObject(hashMapOf(
+                "university" to universityName,
+                "program" to programName,
+                "places" to placesCount,
+                "abiturients" to (getRecords() map {
+                    JSONObject(hashMapOf(
+                            "name" to it.name,
+                            "score" to it.score,
+                            "olymp" to it.isOlymp,
+                            "exempt" to (it.isExempt || it.isTargeted),
+                            "priority" to it.priority
+                    ))
+                }
+                )))
     }
 }
